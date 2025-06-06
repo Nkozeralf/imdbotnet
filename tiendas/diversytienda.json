@@ -1,0 +1,96 @@
+{
+  "url_producto": "https://diversytienda.com/products/luz-zen-luz-nocturna-con-sensor",
+  "detecta_popup": true,
+  "emulate_mobile": false,
+  "boton_popup": "._rsi-buy-now-button:has-text(\"PAGAR EN CASA\")",
+  "popup_formulario": "#_rsi-cod-form-modal-form",
+  "campos": {
+    "#_rsi-field-first_name": "nombre",
+    "#_rsi-field-last_name": "apellido",
+    "#_rsi-field-phone": "telefono",
+    "#_rsi-field-email": "email",
+    "#_rsi-field-address": "direccion",
+    "#_rsi-field-civic_number": "apartamento",
+    "#_rsi-field-additionals_text_input\\.1683116201977": "barrio"
+  },
+  "selects": [
+    {
+      "selector": "#_rsi-field-province_country_field",
+      "valor": "departamento"
+    },
+    {
+      "selector": "#_rsi-field-city",
+      "valor": "ciudad"
+    }
+  ],
+  "departamento_valores": [
+    "ANT",
+    "ARA",
+    "ATL",
+    "BOL",
+    "BOY",
+    "CAL",
+    "CAQ",
+    "CAS",
+    "CAU",
+    "CES",
+    "COR",
+    "CUN",
+    "GUA",
+    "GUV",
+    "HUI",
+    "LAG",
+    "MAG",
+    "MET",
+    "NAR",
+    "NSA",
+    "QUI",
+    "RIS",
+    "SAN",
+    "SUC",
+    "TOL",
+    "VAC"
+  ],
+  "checkbox": "#_rsi-field-newsletter_subscribe_checkbox",
+  "campos_requeridos": [
+    "#_rsi-field-first_name",
+    "#_rsi-field-last_name",
+    "#_rsi-field-phone",
+    "#_rsi-field-email",
+    "#_rsi-field-address",
+    "#_rsi-field-civic_number",
+    "#_rsi-field-additionals_text_input\\.1683116201977",
+    "#_rsi-field-province_country_field",
+    "#_rsi-field-city"
+  ],
+  "boton_envio": "._rsi-modal-submit-button",
+  "order_id_selector": ".order-number",
+  "timeouts": {
+    "popup_wait": 30000,
+    "form_wait": 30000,
+    "city_load_wait": 15000,
+    "submit_wait": 60000
+  },
+  "cantidad_ofertas": {
+    "selector_contenedor": "._rsi-quantity-offers",
+    "ofertas": [
+      {
+        "selector": "._rsi-quantity-offers-offer-container[data-offer-pos=\"0\"]",
+        "cantidad": 1,
+        "precio": "$99.700,00"
+      },
+      {
+        "selector": "._rsi-quantity-offers-offer-container[data-offer-pos=\"1\"]",
+        "cantidad": 2,
+        "precio": "$169.490,00",
+        "descuento": "15%"
+      },
+      {
+        "selector": "._rsi-quantity-offers-offer-container[data-offer-pos=\"2\"]",
+        "cantidad": 3,
+        "precio": "$224.325,00",
+        "descuento": "25%"
+      }
+    ]
+  }
+}

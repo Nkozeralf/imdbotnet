@@ -1,0 +1,46 @@
+{
+  "url_producto": "https://thehighquality.com.co/products/audifonos-airpods-generacion-3",
+  "detecta_popup": true,
+  "emulate_mobile": true,
+  "boton_popup": "button:has-text(\"PEDIR AHORA CONTRA ENTREGA\") >> nth=0",
+  "popup_formulario": "#_rsi-cod-form-modal-form",
+  "campos": {
+    "#_rsi-field-first_name": "nombre",
+    "#_rsi-field-last_name": "apellido",
+    "#_rsi-field-phone": "telefono",
+    "#_rsi-field-address": "direccion",
+    "#_rsi-field-civic_number": "barrio"
+  },
+  "selects": [
+    {
+      "selector": "#_rsi-field-province_country_field",
+      "valor": "departamento"
+    },
+    {
+      "selector": "#_rsi-field-city",
+      "valor": "ciudad"
+    }
+  ],
+  "departamento_valores": [
+    "AMA", "ANT", "ARA", "SAP", "ATL", "BOL", "BOY", "CAL", "CAQ", "CAS",
+    "CAU", "CES", "CHO", "COR", "CUN", "GUA", "GUV", "HUI", "LAG", "MAG",
+    "MET", "NAR", "NSA", "PUT", "QUI", "RIS", "SAN", "SUC", "TOL", "VAC",
+    "VAU", "VID"
+  ],
+  "campos_requeridos": [
+    "#_rsi-field-first_name",
+    "#_rsi-field-last_name",
+    "#_rsi-field-phone",
+    "#_rsi-field-address",
+    "#_rsi-field-province_country_field",
+    "#_rsi-field-city"
+  ],
+  "boton_envio": "button._rsi-modal-submit-button",
+  "order_id_selector": ".order-number",
+  "timeouts": {
+    "popup_wait": 30000,
+    "form_wait": 30000,
+    "city_load_wait": 15000,
+    "submit_wait": 20000
+  }
+}

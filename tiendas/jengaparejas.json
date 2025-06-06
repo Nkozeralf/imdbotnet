@@ -1,0 +1,77 @@
+{
+  "url_producto": "https://jengaparejas.com/products/jengaparejas",
+  "detecta_popup": true,
+  "emulate_mobile": false,
+  "boton_popup": "#_rsi-buy-now-button:has-text(\"PAGAR CONTRAENTREGA\")",
+  "popup_formulario": "#_rsi-cod-form-modal-form",
+  "campos": {
+    "#_rsi-field-first_name": "nombre",
+    "#_rsi-field-last_name": "apellido",
+    "#_rsi-field-note": "cedula",
+    "#_rsi-field-address": "direccion",
+    "#_rsi-field-civic_number": "barrio",
+    "#_rsi-field-zip_code": "apartamento",
+    "#_rsi-field-phone": "telefono"
+  },
+  "selects": [
+    {
+      "selector": "#_rsi-field-province_country_field",
+      "valor": "departamento"
+    },
+    {
+      "selector": "#_rsi-field-city_country_field",
+      "valor": "ciudad"
+    }
+  ],
+  "departamento_valores": [
+    "Antioquia",
+    "Arauca",
+    "Atlántico",
+    "Bolívar",
+    "Boyacá",
+    "Caldas",
+    "Caquetá",
+    "Casanare",
+    "Cauca",
+    "Cesar",
+    "Cundinamarca",
+    "Córdoba",
+    "Huila",
+    "La Guajira",
+    "Magdalena",
+    "Meta",
+    "Nariño",
+    "Norte De Santander",
+    "Quindío",
+    "Risaralda",
+    "Santander",
+    "Sucre",
+    "Tolima",
+    "Valle Del Cauca"
+  ],
+  "checkbox": null,
+  "campos_requeridos": [
+    "#_rsi-field-first_name",
+    "#_rsi-field-last_name",
+    "#_rsi-field-note",
+    "#_rsi-field-address",
+    "#_rsi-field-civic_number",
+    "#_rsi-field-zip_code",
+    "#_rsi-field-phone",
+    "#_rsi-field-province_country_field",
+    "#_rsi-field-city_country_field"
+  ],
+  "boton_envio": "._rsi-modal-submit-button",
+  "order_id_selector": ".order-number",
+  "timeouts": {
+    "popup_wait": 30000,
+    "form_wait": 30000,
+    "city_load_wait": 15000,
+    "submit_wait": 60000
+  },
+  "cantidad_ofertas": {
+    "selector_contenedor": "#rsi-cod-form-quantity-offers-hook",
+    "ofertas": []
+  }
+}
+
