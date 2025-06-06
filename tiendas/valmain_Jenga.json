@@ -1,0 +1,15 @@
+{
+  "url_producto": "https://valmain.co/products/jenga-exxtreme?utm_source=tiktok&utm_medium=cpc&utm_campaign=CAMPAÑA+SMART+JENGA+6-06&utm_id=1834141495337073&utm_term=Grupo+de+anuncios+20250605083418&utm_content=_001&ttclid=E_C_P_CtIBplt3Zf-4bdYXsNgzVqoFxPanaad480c0ZknpAMZa-7QhDO2R0nzKI4PjX85oCj4Pplsc9c1CvqSmAbWrWMLL2hZMIj9PLHUh5OKUxZIW-JUjKApSdUDI4PTBGavTLZvhpYwgb_O5cburZUsUx9PjBtDfTsZlnjwe_B6iJsUDkCREadp7Cw4jLHsEmM2kmIi9lnapKvTtturzLwNjM49J7XN9RpqDC4qRBDW6DaberbK1ne89g8VrZUE1IJlRvYIqbQqcVN3gdXsBdVj99Hn1597qEgR2Mi4w",
+  "detecta_popup": true,
+  "emulate_mobile": true,
+  "boton_popup": "button[aria-label*='PAGA EN TU CASA']",
+  "popup_formulario": "#_rsi-cod-form-modal-form",
+  "campos": {
+    "#_rsi-field-first_name": "nombre",
+    "#_rsi-field-last_name": "apellido",
+    "#_rsi-field-phone": "telefono",
+    "#_rsi-field-email": "email",
+    "#_rsi-field-address": "direccion"
+  },
+  "boton_envio": "._rsi-modal-submit-button"
+}

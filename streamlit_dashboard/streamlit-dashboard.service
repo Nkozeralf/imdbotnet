@@ -1,0 +1,28 @@
+[Unit]
+Description=Streamlit Dashboard - Sistema de Pedidos Automatizados
+After=network.target
+Wants=network.target
+
+[Service]
+Type=forking
+User=botexecutor
+Group=botexecutor
+WorkingDirectory=/home/botexecutor/shopify-bot/streamlit_dashboard
+Environment=PATH=/home/botexecutor/venv-playwright/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/botexecutor/shopify-bot/streamlit_dashboard/run_dashboard.sh
+ExecStop=/bin/kill -TERM $MAINPID
+PIDFile=/home/botexecutor/shopify-bot/streamlit_dashboard/streamlit.pid
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/botexecutor/shopify-bot/streamlit_dashboard/streamlit.log
+StandardError=append:/home/botexecutor/shopify-bot/streamlit_dashboard/streamlit.log
+
+# Configuración de seguridad
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=false
+ReadWritePaths=/home/botexecutor/shopify-bot
+
+[Install]
+WantedBy=multi-user.target
