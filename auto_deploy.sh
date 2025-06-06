@@ -5,6 +5,11 @@
 # Script para automatizar commits y versionamiento inteligente
 # =========================================================================
 
+# Cargar configuración de GitHub si existe
+if [ -f ~/.github_config ]; then
+    source ~/.github_config
+fi
+
 # Configuración de colores para output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -15,7 +20,9 @@ NC='\033[0m' # No Color
 # Configuración del proyecto
 PROJECT_NAME="Shopify Bot"
 BASE_VERSION="3.1"
-REMOTE_REPO="https://github.com/Nkozeralf/imdbotnet.git"
+GITHUB_TOKEN="${GITHUB_TOKEN:-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}"
+GITHUB_USER="${GITHUB_USER:-Nkozeralf}"
+REMOTE_REPO="https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/imdbotnet.git"
 PROJECT_DIR="/home/botexecutor/shopify-bot"
 
 # Función para mostrar mensajes con colores
@@ -175,6 +182,17 @@ deploy_project() {
         print_status "Inicializando repositorio Git..."
         git init
         git remote add origin "$REMOTE_REPO"
+    else
+        # Actualizar remote con token si ya existe
+        print_status "Actualizando configuración del repositorio remoto..."
+        git remote set-url origin "$REMOTE_REPO"
+    fi
+    
+    # Configurar credenciales Git si no están configuradas
+    if [ -z "$(git config user.name)" ]; then
+        print_status "Configurando usuario Git..."
+        git config user.name "$GITHUB_USER"
+        git config user.email "${GITHUB_USER}@users.noreply.github.com"
     fi
     
     # Configurar .gitignore si no existe
