@@ -1,0 +1,33 @@
+# Dependencias para el Dashboard de Shopify Bot
+# Solo incluye librerías adicionales - las básicas ya están en el entorno
+
+# Dashboard web
+streamlit>=1.35.0
+
+# Análisis de datos y gráficos
+pandas>=2.0.0
+plotly>=5.17.0
+
+# Monitoreo del sistema
+psutil>=5.9.0
+
+# Manipulación de archivos y paths
+pathlib2>=2.3.7; python_version < "3.4"
+
+# Para requests (ya debería estar instalado)
+requests>=2.31.0
+
+# Manejo de fechas mejorado
+python-dateutil>=2.8.2
+
+# Para manejo de JSON con mejor performance
+orjson>=3.9.0; python_version >= "3.8"
+
+# Utilidades adicionales para Streamlit
+streamlit-option-menu>=0.3.6
+
+# Para mejor manejo de logs
+rich>=13.0.0
+
+# Nota: No incluimos playwright ni otras dependencias del bot principal
+# ya que se asume que están instaladas en el entorno venv-playwright

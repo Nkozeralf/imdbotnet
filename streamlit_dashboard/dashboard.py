@@ -1,318 +1,407 @@
+#!/usr/bin/env python3
+"""
+Dashboard Principal - Sistema de Pedidos Automatizados
+Streamlit Dashboard moderno y responsivo
+"""
+
 import streamlit as st
-import subprocess
-import json
 import os
+import sys
 from pathlib import Path
+import time
+from datetime import datetime
 
-st.set_page_config(page_title="🚀 Shopify Bot", layout="wide")
+# Configuración de la página
+st.set_page_config(
+    page_title="🛒 Shopify Bot Dashboard",
+    page_icon="🛒",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Rutas
-BOT_PATH = "/home/botexecutor/shopify-bot"
-TIENDAS_PATH = f"{BOT_PATH}/tiendas"
+# Agregar path del proyecto principal
+project_root = Path(__file__).parent.parent
+sys.path.append(str(project_root))
 
-def run_command(cmd):
-    """Ejecutar comando simple"""
+# Importar módulos locales
+from terminal_module import TerminalComponent
+from crud_stores import StoreCRUD
+from log_viewer import LogViewer
+from styles import apply_custom_styles
+
+# Aplicar estilos personalizados
+apply_custom_styles()
+
+# Estado de la aplicación
+if 'terminal_active' not in st.session_state:
+    st.session_state.terminal_active = False
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = "🏠 Dashboard"
+
+def render_header():
+    """Renderizar header con información del sistema"""
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.title("🛒 Shopify Bot Dashboard")
+        st.caption("Sistema de Pedidos Automatizados - Control Completo")
+    
+    with col2:
+        # Estado del sistema
+        if os.path.exists("/tmp/bot_running.pid"):
+            st.success("✅ Bot Activo")
+        else:
+            st.info("💤 Bot Inactivo")
+    
+    with col3:
+        # Hora actual
+        current_time = datetime.now().strftime("%H:%M:%S")
+        st.metric("🕒 Hora", current_time)
+
+def render_sidebar():
+    """Sidebar con navegación principal"""
+    st.sidebar.header("🎛️ Panel de Control")
+    
+    # Navegación principal
+    pages = [
+        "🏠 Dashboard",
+        "💻 Terminal",
+        "🏪 Tiendas", 
+        "📋 Logs",
+        "⚙️ Sistema"
+    ]
+    
+    selected_page = st.sidebar.radio(
+        "Navegación",
+        pages,
+        index=pages.index(st.session_state.current_page)
+    )
+    
+    if selected_page != st.session_state.current_page:
+        st.session_state.current_page = selected_page
+        st.rerun()
+    
+    st.sidebar.divider()
+    
+    # Controles rápidos
+    st.sidebar.subheader("⚡ Acciones Rápidas")
+    
+    if st.sidebar.button("🔄 Refresh", use_container_width=True):
+        st.rerun()
+    
+    if st.sidebar.button("🗑️ Limpiar Cache", use_container_width=True):
+        st.cache_data.clear()
+        st.sidebar.success("✅ Cache limpiado")
+        time.sleep(1)
+        st.rerun()
+    
+    # Estado del servidor
+    st.sidebar.divider()
+    st.sidebar.subheader("📊 Estado del Sistema")
+    
+    # CPU y memoria
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=BOT_PATH)
-        return result.stdout, result.stderr, result.returncode
-    except:
-        return "", "Error ejecutando comando", 1
+        import psutil
+        cpu_percent = psutil.cpu_percent(interval=1)
+        memory = psutil.virtual_memory()
+        
+        st.sidebar.metric("🖥️ CPU", f"{cpu_percent:.1f}%")
+        st.sidebar.metric("💾 RAM", f"{memory.percent:.1f}%")
+        
+        # Espacio en disco
+        disk = psutil.disk_usage('/')
+        disk_percent = (disk.used / disk.total) * 100
+        st.sidebar.metric("💽 Disco", f"{disk_percent:.1f}%")
+        
+    except ImportError:
+        st.sidebar.info("Instala psutil para métricas del sistema")
 
-def get_tiendas():
-    """Obtener tiendas"""
+def render_dashboard_page():
+    """Página principal del dashboard"""
+    render_header()
+    
+    # Métricas principales
+    col1, col2, col3, col4 = st.columns(4)
+    
+    # Obtener estadísticas básicas
     try:
-        tiendas = []
-        for file in os.listdir(TIENDAS_PATH):
-            if file.endswith('.json'):
-                tiendas.append(file.replace('.json', ''))
-        return sorted(tiendas)
-    except:
-        return []
+        from log_viewer import LogViewer
+        log_viewer = LogViewer()
+        stats = log_viewer.get_execution_stats()
+        
+        with col1:
+            st.metric(
+                "📦 Pedidos Totales", 
+                stats.get('total_executions', 0),
+                delta=stats.get('today_executions', 0)
+            )
+        
+        with col2:
+            success_rate = stats.get('success_rate', 0)
+            st.metric(
+                "✅ Tasa de Éxito",
+                f"{success_rate:.1f}%",
+                delta=f"{success_rate - 50:.1f}%" if success_rate != 0 else None
+            )
+        
+        with col3:
+            st.metric(
+                "🏪 Tiendas",
+                len(StoreCRUD.list_stores()),
+                delta=None
+            )
+        
+        with col4:
+            st.metric(
+                "📋 Logs",
+                len(log_viewer.list_log_files()),
+                delta=None
+            )
+    
+    except Exception as e:
+        st.error(f"Error cargando estadísticas: {e}")
+    
+    st.divider()
+    
+    # Gráficos y actividad reciente
+    col_left, col_right = st.columns([2, 1])
+    
+    with col_left:
+        st.subheader("📈 Actividad Reciente")
+        
+        try:
+            # Gráfico de actividad (simulado por ahora)
+            import pandas as pd
+            import numpy as np
+            
+            # Datos de ejemplo - en producción vendría de logs reales
+            dates = pd.date_range(start='2025-06-01', end='2025-06-06', freq='D')
+            data = {
+                'Fecha': dates,
+                'Exitosos': np.random.randint(10, 50, len(dates)),
+                'Fallidos': np.random.randint(0, 10, len(dates))
+            }
+            df = pd.DataFrame(data)
+            
+            st.line_chart(
+                df.set_index('Fecha')[['Exitosos', 'Fallidos']],
+                height=300
+            )
+            
+        except Exception as e:
+            st.info("📊 Gráficos disponibles cuando haya más datos")
+    
+    with col_right:
+        st.subheader("🔔 Estado del Sistema")
+        
+        # Verificar servicios críticos
+        services_status = {
+            "VPN Surfshark": check_vpn_status(),
+            "Proxy Service": check_proxy_status(),
+            "Bot Process": check_bot_status(),
+            "Logs Directory": os.path.exists("../logs")
+        }
+        
+        for service, status in services_status.items():
+            if status:
+                st.success(f"✅ {service}")
+            else:
+                st.error(f"❌ {service}")
+        
+        st.divider()
+        
+        # Botones de acción rápida
+        st.subheader("⚡ Acciones Rápidas")
+        
+        if st.button("🚀 Ejecutar Bot", use_container_width=True, type="primary"):
+            st.session_state.current_page = "💻 Terminal"
+            st.rerun()
+        
+        if st.button("🏪 Gestionar Tiendas", use_container_width=True):
+            st.session_state.current_page = "🏪 Tiendas"
+            st.rerun()
+        
+        if st.button("📋 Ver Logs", use_container_width=True):
+            st.session_state.current_page = "📋 Logs"
+            st.rerun()
 
-def load_tienda(nombre):
-    """Cargar tienda"""
-    try:
-        with open(f"{TIENDAS_PATH}/{nombre}.json", 'r') as f:
-            return json.load(f)
-    except:
-        return None
+def render_terminal_page():
+    """Página del terminal interactivo"""
+    st.header("💻 Terminal Interactivo")
+    st.caption("Ejecuta y controla el bot en tiempo real")
+    
+    # Componente terminal
+    terminal = TerminalComponent()
+    terminal.render()
 
-def save_tienda(nombre, config):
-    """Guardar tienda"""
+def render_stores_page():
+    """Página de gestión de tiendas"""
+    st.header("🏪 Gestión de Tiendas")
+    st.caption("Crear, editar y eliminar configuraciones de tiendas")
+    
+    # Componente CRUD de tiendas
+    crud = StoreCRUD()
+    crud.render()
+
+def render_logs_page():
+    """Página de visualización de logs"""
+    st.header("📋 Visualizador de Logs")
+    st.caption("Navegar, filtrar y descargar logs del sistema")
+    
+    # Componente visualizador de logs
+    log_viewer = LogViewer()
+    log_viewer.render()
+
+def render_system_page():
+    """Página de configuración del sistema"""
+    st.header("⚙️ Configuración del Sistema")
+    st.caption("Ajustes y mantenimiento del sistema")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("🔧 Mantenimiento")
+        
+        if st.button("🗑️ Limpiar Logs Antiguos", use_container_width=True):
+            try:
+                # Limpiar logs más antiguos de 7 días
+                import glob
+                from datetime import datetime, timedelta
+                
+                log_files = glob.glob("../logs/*.log")
+                cutoff_date = datetime.now() - timedelta(days=7)
+                deleted_count = 0
+                
+                for log_file in log_files:
+                    file_time = datetime.fromtimestamp(os.path.getmtime(log_file))
+                    if file_time < cutoff_date:
+                        os.remove(log_file)
+                        deleted_count += 1
+                
+                st.success(f"✅ {deleted_count} archivos eliminados")
+                
+            except Exception as e:
+                st.error(f"❌ Error: {e}")
+        
+        if st.button("🔄 Reiniciar Dashboard", use_container_width=True):
+            st.warning("⚠️ Reiniciando dashboard...")
+            time.sleep(2)
+            st.rerun()
+        
+        if st.button("📊 Generar Reporte", use_container_width=True):
+            try:
+                # Generar reporte básico
+                log_viewer = LogViewer()
+                stats = log_viewer.get_execution_stats()
+                
+                report = f"""
+# Reporte del Sistema - {datetime.now().strftime('%Y-%m-%d %H:%M')}
+
+## Estadísticas Generales
+- Total de ejecuciones: {stats.get('total_executions', 0)}
+- Tasa de éxito: {stats.get('success_rate', 0):.1f}%
+- Tiendas configuradas: {len(StoreCRUD.list_stores())}
+- Archivos de log: {len(log_viewer.list_log_files())}
+
+## Estado de Servicios
+- VPN: {'✅ Activo' if check_vpn_status() else '❌ Inactivo'}
+- Proxy: {'✅ Activo' if check_proxy_status() else '❌ Inactivo'}
+- Bot: {'✅ Activo' if check_bot_status() else '❌ Inactivo'}
+"""
+                
+                st.download_button(
+                    "📥 Descargar Reporte",
+                    report,
+                    file_name=f"reporte_sistema_{datetime.now().strftime('%Y%m%d_%H%M')}.md",
+                    mime="text/markdown"
+                )
+                
+            except Exception as e:
+                st.error(f"❌ Error generando reporte: {e}")
+    
+    with col2:
+        st.subheader("📊 Información del Sistema")
+        
+        # Información del entorno
+        st.code(f"""
+Sistema Operativo: {os.name}
+Python: {sys.version.split()[0]}
+Directorio de trabajo: {os.getcwd()}
+Usuario: {os.getenv('USER', 'desconocido')}
+Streamlit: {st.__version__}
+        """)
+        
+        # Variables de entorno relevantes
+        st.subheader("🔐 Variables de Entorno")
+        env_vars = ['PATH', 'PYTHONPATH', 'USER', 'HOME']
+        for var in env_vars:
+            value = os.getenv(var, 'No definida')
+            if len(value) > 50:
+                value = value[:47] + "..."
+            st.text(f"{var}: {value}")
+
+# Funciones auxiliares para verificar estado de servicios
+def check_vpn_status() -> bool:
+    """Verificar si VPN está activa"""
     try:
-        with open(f"{TIENDAS_PATH}/{nombre}.json", 'w') as f:
-            json.dump(config, f, indent=2)
-        return True
+        # Verificar procesos de OpenVPN
+        import subprocess
+        result = subprocess.run(['pgrep', 'openvpn'], capture_output=True)
+        return result.returncode == 0
     except:
         return False
 
-def delete_tienda(nombre):
-    """Eliminar tienda"""
+def check_proxy_status() -> bool:
+    """Verificar si el proxy service está disponible"""
     try:
-        os.remove(f"{TIENDAS_PATH}/{nombre}.json")
-        return True
+        import requests
+        response = requests.get("http://proxy-svc:8002/health", timeout=5)
+        return response.status_code == 200
     except:
         return False
 
-# TÍTULO
-st.title("🚀 Shopify Bot Dashboard")
+def check_bot_status() -> bool:
+    """Verificar si el bot está ejecutándose"""
+    try:
+        import subprocess
+        result = subprocess.run(['pgrep', '-f', 'launcher.py'], capture_output=True)
+        return result.returncode == 0
+    except:
+        return False
 
-# SIDEBAR
-st.sidebar.title("📋 Menú")
-page = st.sidebar.radio("Sección", ["💻 Consola", "🏪 Tiendas"])
-
-# BOTÓN PARAR
-if st.sidebar.button("🛑 PARAR BOT", type="primary"):
-    run_command("pkill -f launcher.py")
-    run_command("pkill -f playwright")
-    st.sidebar.success("✅ Bot parado")
-
-# ===============================
-# PÁGINA CONSOLA
-# ===============================
-if page == "💻 Consola":
-    st.header("💻 Consola Web")
+# Función principal
+def main():
+    """Función principal de la aplicación"""
+    render_sidebar()
     
-    # Comandos predefinidos
-    st.subheader("🔧 Comandos Rápidos")
+    # Routing basado en la página seleccionada
+    current_page = st.session_state.current_page
     
+    if current_page == "🏠 Dashboard":
+        render_dashboard_page()
+    elif current_page == "💻 Terminal":
+        render_terminal_page()
+    elif current_page == "🏪 Tiendas":
+        render_stores_page()
+    elif current_page == "📋 Logs":
+        render_logs_page()
+    elif current_page == "⚙️ Sistema":
+        render_system_page()
+    else:
+        st.error(f"Página no encontrada: {current_page}")
+    
+    # Footer
+    st.divider()
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("🚀 Ejecutar Bot", use_container_width=True):
-            st.info("Ejecutando bot...")
-            cmd = f"cd {BOT_PATH} && source /home/botexecutor/venv-playwright/bin/activate && python launcher.py"
-            
-            # Crear script temporal
-            script = f"""#!/bin/bash
-{cmd} > /tmp/bot_log.txt 2>&1 &
-echo $! > /tmp/bot_pid.txt
-"""
-            with open("/tmp/run_bot.sh", "w") as f:
-                f.write(script)
-            os.chmod("/tmp/run_bot.sh", 0o755)
-            
-            # Ejecutar
-            stdout, stderr, code = run_command("/tmp/run_bot.sh")
-            
-            if code == 0:
-                st.success("✅ Bot iniciado")
-                st.info("📝 Log en /tmp/bot_log.txt")
-            else:
-                st.error(f"❌ Error: {stderr}")
+        st.caption(f"🕒 Última actualización: {datetime.now().strftime('%H:%M:%S')}")
     
     with col2:
-        if st.button("📝 Ver Log", use_container_width=True):
-            stdout, stderr, code = run_command("tail -10 /tmp/bot_log.txt 2>/dev/null || echo 'No hay log'")
-            st.code(stdout)
+        st.caption("🛒 Shopify Bot Dashboard v2.0")
     
     with col3:
-        if st.button("📊 Ver Procesos", use_container_width=True):
-            stdout, stderr, code = run_command("ps aux | grep launcher | grep -v grep")
-            if stdout:
-                st.code(stdout)
-            else:
-                st.info("No hay procesos corriendo")
-    
-    st.markdown("---")
-    
-    # Comando personalizado
-    st.subheader("⌨️ Comando Personalizado")
-    
-    comando = st.text_input("Comando:", placeholder="ls -la")
-    
-    if st.button("▶️ Ejecutar") and comando:
-        with st.spinner("Ejecutando..."):
-            stdout, stderr, code = run_command(comando)
-            
-            if stdout:
-                st.code(stdout)
-            
-            if stderr:
-                st.error(stderr)
-    
-    st.markdown("---")
-    
-    # Ejecutar bot con opciones
-    st.subheader("🎯 Ejecutar Bot con Opciones")
-    
-    tiendas_disponibles = get_tiendas()
-    
-    if tiendas_disponibles:
-        # Selección de tiendas
-        tiendas_seleccionadas = st.multiselect("Tiendas:", tiendas_disponibles)
-        
-        # Opciones
-        col1, col2 = st.columns(2)
-        with col1:
-            pedidos = st.number_input("Pedidos por tienda:", 1, 5, 1)
-            usar_proxy = st.checkbox("Usar proxy", True)
-        
-        with col2:
-            modo_rapido = st.checkbox("Modo rápido", False)
-            usar_intervalos = st.checkbox("Usar intervalos", True)
-        
-        # Botón ejecutar
-        if st.button("🚀 EJECUTAR PEDIDOS", type="primary") and tiendas_seleccionadas:
-            # Crear input automático
-            todas_tiendas = get_tiendas()
-            indices = []
-            
-            for tienda in tiendas_seleccionadas:
-                if tienda in todas_tiendas:
-                    idx = todas_tiendas.index(tienda) + 1
-                    indices.append(str(idx))
-            
-            input_auto = f"""n
-{','.join(indices)}
-{pedidos}
-{'s' if usar_proxy else 'n'}
-{'s' if modo_rapido else 'n'}
-{'intervalos' if usar_intervalos else 'inmediato'}
-s
-"""
-            
-            # Crear script
-            script_bot = f"""#!/bin/bash
-cd {BOT_PATH}
-source /home/botexecutor/venv-playwright/bin/activate
-echo '{input_auto}' | python launcher.py > /tmp/bot_pedidos.log 2>&1 &
-echo $! > /tmp/bot_pedidos_pid.txt
-"""
-            
-            with open("/tmp/ejecutar_pedidos.sh", "w") as f:
-                f.write(script_bot)
-            os.chmod("/tmp/ejecutar_pedidos.sh", 0o755)
-            
-            # Ejecutar
-            stdout, stderr, code = run_command("/tmp/ejecutar_pedidos.sh")
-            
-            if code == 0:
-                st.success("✅ Pedidos ejecutándose")
-                st.info(f"📦 {len(tiendas_seleccionadas)} tiendas, {pedidos} pedidos cada una")
-                st.info("📝 Log: /tmp/bot_pedidos.log")
-            else:
-                st.error("❌ Error ejecutando pedidos")
-    else:
-        st.warning("⚠️ No hay tiendas configuradas")
+        st.caption("🔒 Seguro y Automatizado")
 
-# ===============================
-# PÁGINA TIENDAS
-# ===============================
-elif page == "🏪 Tiendas":
-    st.header("🏪 Gestión de Tiendas")
-    
-    tab1, tab2, tab3 = st.tabs(["📋 Ver", "➕ Crear", "✏️ Editar"])
-    
-    # VER TIENDAS
-    with tab1:
-        tiendas = get_tiendas()
-        
-        if tiendas:
-            for tienda in tiendas:
-                config = load_tienda(tienda)
-                
-                with st.expander(f"🏪 {tienda}"):
-                    if config:
-                        st.write(f"🔗 **URL:** {config.get('url_producto', 'No definida')}")
-                        st.write(f"📱 **Mobile:** {'Sí' if config.get('emulate_mobile') else 'No'}")
-                        st.write(f"🪟 **Popup:** {'Sí' if config.get('detecta_popup') else 'No'}")
-                        
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            if st.button(f"📄 Ver JSON", key=f"view_{tienda}"):
-                                st.json(config)
-                        
-                        with col2:
-                            if st.button(f"🗑️ Eliminar", key=f"del_{tienda}"):
-                                if delete_tienda(tienda):
-                                    st.success(f"Eliminada: {tienda}")
-                                    st.rerun()
-                    else:
-                        st.error("Error cargando configuración")
-        else:
-            st.info("📭 No hay tiendas configuradas")
-    
-    # CREAR TIENDA
-    with tab2:
-        st.subheader("➕ Crear Nueva Tienda")
-        
-        with st.form("nueva_tienda"):
-            nombre = st.text_input("Nombre de la tienda:")
-            url = st.text_input("URL del producto:")
-            
-            st.write("**Opciones:**")
-            mobile = st.checkbox("Emular móvil")
-            popup = st.checkbox("Detecta popup")
-            
-            if st.form_submit_button("💾 Crear Tienda"):
-                if nombre and url:
-                    config = {
-                        "url_producto": url,
-                        "emulate_mobile": mobile,
-                        "detecta_popup": popup,
-                        "boton_popup": "",
-                        "popup_formulario": "",
-                        "campos": {},
-                        "selects": [],
-                        "timeouts": {
-                            "popup_wait": 30000,
-                            "form_wait": 30000,
-                            "submit_wait": 60000
-                        }
-                    }
-                    
-                    if save_tienda(nombre, config):
-                        st.success(f"✅ Tienda '{nombre}' creada")
-                        st.rerun()
-                    else:
-                        st.error("❌ Error guardando tienda")
-                else:
-                    st.warning("⚠️ Completa nombre y URL")
-    
-    # EDITAR TIENDA
-    with tab3:
-        tiendas = get_tiendas()
-        
-        if tiendas:
-            tienda_editar = st.selectbox("Seleccionar tienda:", tiendas)
-            
-            if tienda_editar:
-                config = load_tienda(tienda_editar)
-                
-                if config:
-                    st.subheader(f"✏️ Editando: {tienda_editar}")
-                    
-                    config_json = st.text_area(
-                        "Configuración JSON:",
-                        value=json.dumps(config, indent=2),
-                        height=400
-                    )
-                    
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        if st.button("💾 Guardar"):
-                            try:
-                                nueva_config = json.loads(config_json)
-                                if save_tienda(tienda_editar, nueva_config):
-                                    st.success("✅ Tienda actualizada")
-                                    st.rerun()
-                                else:
-                                    st.error("❌ Error guardando")
-                            except json.JSONDecodeError:
-                                st.error("❌ JSON inválido")
-                    
-                    with col2:
-                        if st.button("🔄 Recargar"):
-                            st.rerun()
-                else:
-                    st.error("❌ Error cargando tienda")
-        else:
-            st.info("📭 No hay tiendas para editar")
-
-# FOOTER
-st.sidebar.markdown("---")
-st.sidebar.caption("🚀 Dashboard Simple")
-st.sidebar.caption("💻 Sin errores")
-st.sidebar.caption(f"📂 {BOT_PATH}")
+if __name__ == "__main__":
+    main()
