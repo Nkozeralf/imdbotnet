@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
 
 from limpiador_logs import limpiar_logs
-from bot_core import ejecutar_pedido
+from pedido_bot_base import ejecutar_pedido
 from rotador_proxy import obtener_proxy, probar_proxy
 from notificador_telegram import enviar_resumen_telegram
 
